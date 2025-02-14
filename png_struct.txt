@@ -1,0 +1,12 @@
+89 50 4E 47 0D 0A 1A 0A   # PNG Signature
+00 00 00 0D               # Length (13 bytes)
+49 48 44 52               # Type (IHDR)
+... (13 bytes of IHDR data)
+CRC32                     # CRC
+00 00 00 0D               # Length (13 bytes)
+49 44 41 54               # Type (IDAT)
+... (compressed image data)
+CRC32                     # CRC
+00 00 00 00               # Length (0 bytes)
+49 45 4E 44               # Type (IEND)
+CRC32                     # CRC

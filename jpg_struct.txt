@@ -1,0 +1,118 @@
++-------------------------+
+| SOI Marker (0xFFD8)     |
++-------------------------+
+| APP0 Marker (0xFFE0)    |
+| Length                  |
+| Identifier ("JFIF\0")   |
+| Version                 |
+| Units                   |
+| X Density               |
+| Y Density               |
+| Thumbnail Width         |
+| Thumbnail Height        |
+| Thumbnail Data          |
++-------------------------+
+| APP1 Marker (0xFFE1)    |
+| ...                     |
+| (Other APPn Markers)    |
++-------------------------+
+| DQT Marker   (0xFFDB)
+Cấu trúc của DQT marker
+    Mỗi DQT marker có cấu trúc như sau:
+
+    Marker: 2 byte (giá trị 0xFFDB)
+
+    Độ dài: 2 byte (độ dài của toàn bộ đoạn DQT, bao gồm cả trường độ dài này)
+
+    Thông tin bảng lượng tử hóa: 1 byte (4 bit cao là độ chính xác, 4 bit thấp là chỉ số bảng)
+
+    Bảng lượng tử hóa: 64 giá trị lượng tử hóa (mỗi giá trị 1 hoặc 2 byte tùy thuộc vào độ chính xác)   | 
++-------------------------+
+| SOF Marker  (0xFFC0)
+    Cấu trúc của SOF marker:
+    SOF marker chứa các thông tin như:
+
+    Marker: 2 byte (0xFFC0 cho SOF0)
+
+    Độ dài: 2 byte (chỉ ra tổng độ dài của đoạn SOF, bao gồm cả trường độ dài này)
+
+    Độ chính xác: 1 byte (thường là 8 bit)
+
+    Chiều cao hình ảnh: 2 byte (độ cao của hình ảnh tính bằng pixel)
+
+    Chiều rộng hình ảnh: 2 byte (độ rộng của hình ảnh tính bằng pixel)
+
+    Số lượng thành phần: 1 byte (số lượng thành phần màu, ví dụ: Y, Cb, Cr)
+
+    Thông tin về từng thành phần: (3)
+
+    ID thành phần: 1 byte
+
+    Hệ số lấy mẫu: 1 byte (4 bit cho hệ số lấy mẫu ngang, 4 bit cho hệ số lấy mẫu dọc)
+
+    Chỉ số bảng lượng tử hóa: 1 byte            
++-------------------------+
+| DHT Marker    FFC4(Compressed)
+
+Marker: 2 bytes
+
+Value: 0xFFC4
+
+Length: 2 bytes
+
+Indicates the total length of the segment, including the length bytes.
+
+Table Class and Table Identifier: 1 byte
+
+The upper 4 bits: Table Class (0 for DC table, 1 for AC table).
+
+The lower 4 bits: Table Identifier (0 to 3).
+
+Number of Huffman Codes: 16 bytes
+
+Specifies the number of Huffman codes for each length (1 to 16 bits).
+
+Huffman Values: Variable length
+
+Lists the Huffman values corresponding to the codes.
++-------------------------+
+| SOS Marker       
+    Marker: 2 byte
+
+    Giá trị: 0xFFDA
+
+    Độ dài: 2 byte
+
+    Độ dài của đoạn SOS, bao gồm cả các byte độ dài này.
+
+    Số lượng thành phần: 1 byte
+
+    Chỉ ra số lượng thành phần màu sẽ được mã hóa trong quét này.
+
+    Thông tin thành phần: Biến
+
+    Mỗi thành phần gồm 2 byte:
+
+    ID thành phần: 1 byte
+
+    ID bảng Huffman: 1 byte (4 bit cao cho DC table, 4 bit thấp cho AC table)
+
+    Thông tin nén và chỉ số: 3 byte
+
+    Start of spectral or predictor selection: 1 byte
+
+    End of spectral selection: 1 byte
+
+    Successive approximation bit position high/low: 1 byte
+
+    Dữ liệu hình ảnh nén: Biến
+
+    Dữ liệu hình ảnh nén Huffman bắt đầu ngay sau SOS marker.       |
++-------------------------+
+| Compressed Image Data   |
++-------------------------+
+| EOI Marker (0xFFD9)     |
++-------------------------+
+
+
+
