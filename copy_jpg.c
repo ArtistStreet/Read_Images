@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <stdbool.h>
 #include <assert.h>
+#include <string.h>
 #include <arpa/inet.h> // Include this header for ntohs
 
 void read_file(FILE *file, void *buffer, size_t size) {
@@ -49,11 +50,10 @@ void read_and_write(FILE *input_file, FILE *output_file, void *buffer, size_t si
     write_file(output_file, buffer, size);
 }
 
-
 u_int32_t ptr;
 
 void extract_appn_data(FILE *input_file, FILE *output_file) {
-    uint8_t marker[2]; // 2 bytes của marker APPn
+    uint8_t marker[2]; // 2 bytes signature APPn
 
     read_file(input_file, marker, 2);
 
@@ -64,7 +64,7 @@ void extract_appn_data(FILE *input_file, FILE *output_file) {
         read_and_write(input_file, output_file, length_bytes, 2);
         
         uint16_t length = (length_bytes[0] << 8) | length_bytes[1];
-        uint8_t *appn_data = malloc(length - 2); // Trừ đi trường độ dài 2 byte
+        uint8_t *appn_data = malloc(length - 2); // 2 byte length
         
         error(appn_data, input_file, output_file);
         
@@ -73,12 +73,21 @@ void extract_appn_data(FILE *input_file, FILE *output_file) {
         free(appn_data);
         
         ptr = ftell(input_file);
+        // printf("%u ", ptr);
+        
+        if (ptr == 20) {
+            char *str = (char *)malloc(50 * sizeof(char));
+            strcpy(str, "Bui Thi Ly");
+            fwrite(str , sizeof(char) , strlen(str), output_file);
+            free(str);
+        }
         read_file(input_file, marker, 2);
         // printf("Found marker: 0x%02X%02X\n", marker[0], marker[1]);
     }
 }
 
 void text(FILE *input_file, FILE *output_file) {
+    // printf("%u\n", ptr);
     fseek(input_file, ptr, SEEK_SET); // Set the file position to the saved pointer
     
     uint8_t marker[2];
@@ -154,7 +163,7 @@ void extract_sof_data(FILE *input_file, FILE *output_file) {
     // restart_marker(input_file, output_file);
     
     while (marker[0] == 0xFF && (marker[1] >= 0xC0 && marker[1] <= 0xC3)) { // Check if it's a SOF marker
-        printf("Found marker: 0x%02X%02X\n", marker[0], marker[1]);
+        // printf("Found marker: 0x%02X%02X\n", marker[0], marker[1]);
         write_file(output_file, marker, 2); // Write the marker to the output file
         
         uint8_t length_bytes[2];
@@ -277,9 +286,9 @@ int main(int argc, char **argv) {
 
     uint8_t soi_marker[2]; // SOI
     read_and_write(input_file, output_file, soi_marker, 2);
-
+    
     extract_appn_data(input_file, output_file); // APPn
-
+    
     text(input_file, output_file);
 
     extract_dqt_data(input_file, output_file); // DQT
