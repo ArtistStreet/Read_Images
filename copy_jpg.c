@@ -50,10 +50,11 @@ void read_and_write(FILE *input_file, FILE *output_file, void *buffer, size_t si
     write_file(output_file, buffer, size);
 }
 
+
 u_int32_t ptr;
 
 void extract_appn_data(FILE *input_file, FILE *output_file) {
-    uint8_t marker[2]; // 2 bytes signature APPn
+    uint8_t marker[2]; // 2 bytes của marker APPn
 
     read_file(input_file, marker, 2);
 
@@ -64,7 +65,7 @@ void extract_appn_data(FILE *input_file, FILE *output_file) {
         read_and_write(input_file, output_file, length_bytes, 2);
         
         uint16_t length = (length_bytes[0] << 8) | length_bytes[1];
-        uint8_t *appn_data = malloc(length - 2); // 2 byte length
+        uint8_t *appn_data = malloc(length - 2); // Trừ đi trường độ dài 2 byte
         
         error(appn_data, input_file, output_file);
         
@@ -73,21 +74,21 @@ void extract_appn_data(FILE *input_file, FILE *output_file) {
         free(appn_data);
         
         ptr = ftell(input_file);
-        // printf("%u ", ptr);
-        
-        if (ptr == 20) {
-            char *str = (char *)malloc(50 * sizeof(char));
-            strcpy(str, "Bui Thi Ly");
-            fwrite(str , sizeof(char) , strlen(str), output_file);
-            free(str);
-        }
+        // if (marker[0] == 0xFF && marker[1] == 0xE0) {
+        //     printf("1");
+        //     marker[0] = 0xFF, marker[1] = 0xFE; 
+        //     write_file(output_file, marker, 2);
+        // }
         read_file(input_file, marker, 2);
         // printf("Found marker: 0x%02X%02X\n", marker[0], marker[1]);
     }
 }
 
+void inject_data(FILE *input_file, FILE *output_file, const char *data) {
+    fwrite(data, 1, strlen(data), output_file);
+}
+
 void text(FILE *input_file, FILE *output_file) {
-    // printf("%u\n", ptr);
     fseek(input_file, ptr, SEEK_SET); // Set the file position to the saved pointer
     
     uint8_t marker[2];
@@ -111,6 +112,20 @@ void text(FILE *input_file, FILE *output_file) {
         ptr = ftell(input_file);
         read_file(input_file, marker, 2);
     }
+}
+
+void inject(FILE *input_file, FILE *output_file) {
+    fseek(input_file, ptr, SEEK_SET);
+
+    uint8_t marker[2];
+    read_file(input_file, marker, 2);
+
+    if (marker[0] != 0xFF && marker[1] != 0xFE) {
+        marker[0] = 0xFF, marker[1] = 0xFE; 
+        write_file(output_file, marker, 2);
+    }
+    // printf("1234");
+    // write_file(output_file, marker, 2);
 }
 
 void extract_dqt_data(FILE *input_file, FILE *output_file) {
@@ -288,6 +303,9 @@ int main(int argc, char **argv) {
     read_and_write(input_file, output_file, soi_marker, 2);
     
     extract_appn_data(input_file, output_file); // APPn
+    
+    // inject(input_file, output_file);
+    inject_data(input_file, output_file, "Hello");
     
     text(input_file, output_file);
 

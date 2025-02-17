@@ -10,3 +10,13 @@ CRC32                     # CRC
 00 00 00 00               # Length (0 bytes)
 49 45 4E 44               # Type (IEND)
 CRC32                     # CRC
+
+
+Tệp PNG bao gồm các chunks (khối dữ liệu), mỗi chunk có cấu trúc gồm:
+
+Length (4 bytes): Số lượng byte dữ liệu của chunk (không bao gồm header và CRC).
+Type (4 bytes): Tên loại chunk, dùng để xác định kiểu dữ liệu (ví dụ: IHDR, IDAT, IEND, v.v.).
+Data: Dữ liệu của chunk (nội dung cụ thể của chunk đó).
+CRC-32 (4 bytes): Mã CRC kiểm tra tính toàn vẹn của type của chunk.
+
+8 33 48 121

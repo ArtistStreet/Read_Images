@@ -1,7 +1,7 @@
 +-------------------------+
 | SOI Marker (0xFFD8)     |
 +-------------------------+
-| APP0 Marker (0xFFE0)    |
+| APP0 Marker (0xFFE0) (18 byte)
 | Length                  |
 | Identifier ("JFIF\0")   |
 | Version                 |

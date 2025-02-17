@@ -108,14 +108,10 @@ int main(int arg, char **argv) {
         write_bytes(output_file, chunk_type, sizeof(chunk_type));
 
         // Check if the chunk type is IHDR
-        if (*(uint8_t*)chunk_type == 0xfb16f128) {
+        if (*(uint8_t*)chunk_type == 0x52444849) {
             uint32_t width, height;
             width = read_uint32(input_file);
             height = read_uint32(input_file);
-            // read_file(input_file, &width, sizeof(width));
-            // read_file(input_file, &height, sizeof(height));
-            // reverse_bytes(&width, sizeof(width));
-            // reverse_bytes(&height, sizeof(height));
             printf("Width: %u\n", width);
             printf("Height: %u\n", height);
 
@@ -144,7 +140,7 @@ int main(int arg, char **argv) {
         write_bytes(output_file, &chunk_crc, sizeof(chunk_crc));
 
         printf("Chunk length: %u\n", chunk_length);
-        printf("Chunk type: %.*s (0x%08x)\n", sizeof(chunk_type), chunk_type, chunk_type);
+        printf("Chunk type: %.*s(0x%08x)\n", sizeof(chunk_type), chunk_type, *(uint32_t*) chunk_type);
         printf("Chunk CRC: 0x%08x\n", chunk_crc);
         printf("-------------------------------\n");
     }
