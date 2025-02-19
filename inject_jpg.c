@@ -84,8 +84,12 @@ void extract_appn_data(FILE *input_file, FILE *output_file) {
     }
 }
 
-void inject_data(FILE *input_file, FILE *output_file, const char *data) {
-    fwrite(data, 1, strlen(data), output_file);
+void inject_data(FILE *input_file, FILE *output_file) {
+    char buffer[1024];
+    size_t n;
+    while ((n = fread(buffer, 1, sizeof(buffer), input_file)) > 0) {
+        fwrite(buffer, 1, n, output_file);
+    }
 }
 
 void text(FILE *input_file, FILE *output_file) {
@@ -299,7 +303,13 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    FILE *inject_file = fopen("inject.c", "w");
+    FILE *inject_file = fopen("inject.c", "r");
+    if (inject_file == NULL) {
+        printf("Error: Unable to open inject file\n");
+        fclose(input_file);
+        fclose(output_file);
+        return 1;
+    }
 
     uint8_t soi_marker[2]; // SOI
     read_and_write(input_file, output_file, soi_marker, 2);
@@ -307,7 +317,6 @@ int main(int argc, char **argv) {
     extract_appn_data(input_file, output_file); // APPn
     printf("%d\n", ftell(input_file));
     // inject(input_file, output_file);
-    inject_data(input_file, output_file, "Bui Thi Ly");
     
     text(input_file, output_file);
 
@@ -319,8 +328,11 @@ int main(int argc, char **argv) {
     
     extract_sos_data(input_file, output_file); // SOS
     
+    inject_data(inject_file, output_file);
+    
     fclose(input_file);
     fclose(output_file);
+    fclose(inject_file);
 
     return 0;
 }

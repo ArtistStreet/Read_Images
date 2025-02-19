@@ -108,7 +108,7 @@ int main(int arg, char **argv) {
         write_bytes(output_file, chunk_type, sizeof(chunk_type));
 
         // Check if the chunk type is IHDR
-        if (*(uint8_t*)chunk_type == 0x52444849) {
+        if (*(uint32_t*)chunk_type == 0x52444849) {
             uint32_t width, height;
             width = read_uint32(input_file);
             height = read_uint32(input_file);
@@ -116,7 +116,7 @@ int main(int arg, char **argv) {
             printf("Height: %u\n", height);
 
             // Skip the remaining IHDR data (5 bytes)
-            fseek(input_file, 5, SEEK_CUR);
+            fseek(input_file, -8, SEEK_CUR);
         }
 
         // Check if the chunk type is IEND
