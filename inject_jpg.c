@@ -53,12 +53,29 @@ void read_and_write(FILE *input_file, FILE *output_file, void *buffer, size_t si
 
 u_int32_t ptr;
 
+void inject_data(FILE *output_file) {
+    // char buffer[1024];
+
+    char s[] = "Bui Thi Ly <3";
+    // size_t n;
+    // while ((n = fread(buffer, 1, sizeof(buffer), input_file)) > 0) {
+    //     fwrite(buffer, 1, n, output_file);
+    // }
+
+    for (int i = 0; i < strlen(s); i++) {
+        fwrite(&s[i], 1, 1, output_file);
+    }
+}
+
 void extract_appn_data(FILE *input_file, FILE *output_file) {
     uint8_t marker[2]; // 2 bytes của marker APPn
 
     read_file(input_file, marker, 2);
 
     while (marker[0] == 0xFF && (marker[1] >= 0xE0 && marker[1] <= 0xEF)) {
+        if (marker[1] == 0xE2) {
+            inject_data(output_file);
+        } 
         write_file(output_file, marker, 2);
         
         uint8_t length_bytes[2];
@@ -74,21 +91,7 @@ void extract_appn_data(FILE *input_file, FILE *output_file) {
         free(appn_data);
         
         ptr = ftell(input_file);
-        // if (marker[0] == 0xFF && marker[1] == 0xE0) {
-        //     printf("1");
-        //     marker[0] = 0xFF, marker[1] = 0xFE; 
-        //     write_file(output_file, marker, 2);
-        // }
         read_file(input_file, marker, 2);
-        // printf("Found marker: 0x%02X%02X\n", marker[0], marker[1]);
-    }
-}
-
-void inject_data(FILE *input_file, FILE *output_file) {
-    char buffer[1024];
-    size_t n;
-    while ((n = fread(buffer, 1, sizeof(buffer), input_file)) > 0) {
-        fwrite(buffer, 1, n, output_file);
     }
 }
 
@@ -118,19 +121,17 @@ void text(FILE *input_file, FILE *output_file) {
     }
 }
 
-void inject(FILE *input_file, FILE *output_file) {
-    fseek(input_file, ptr, SEEK_SET);
+// void inject(FILE *input_file, FILE *output_file) {
+//     fseek(input_file, ptr, SEEK_SET);
 
-    uint8_t marker[2];
-    read_file(input_file, marker, 2);
+//     uint8_t marker[2];
+//     read_file(input_file, marker, 2);
 
-    if (marker[0] != 0xFF && marker[1] != 0xFE) {
-        marker[0] = 0xFF, marker[1] = 0xFE; 
-        write_file(output_file, marker, 2);
-    }
-    // printf("1234");
-    // write_file(output_file, marker, 2);
-}
+//     if (marker[0] != 0xFF && marker[1] != 0xFE) {
+//         marker[0] = 0xFF, marker[1] = 0xFE; 
+//         write_file(output_file, marker, 2);
+//     }
+// }
 
 void extract_dqt_data(FILE *input_file, FILE *output_file) {
     fseek(input_file, ptr, SEEK_SET); // Set the file position to the saved pointer
@@ -182,21 +183,17 @@ void extract_sof_data(FILE *input_file, FILE *output_file) {
     // restart_marker(input_file, output_file);
     
     while (marker[0] == 0xFF && (marker[1] >= 0xC0 && marker[1] <= 0xC3)) { // Check if it's a SOF marker
-        // printf("Found marker: 0x%02X%02X\n", marker[0], marker[1]);
         write_file(output_file, marker, 2); // Write the marker to the output file
         
         uint8_t length_bytes[2];
-        // read_and_write(input_file, output_file, length_bytes, 2);
         read_file(input_file, length_bytes, 2); // Read the length of the SOF segment
         write_file(output_file, length_bytes, 2); // Write the length to the output file
         
         uint16_t length = (length_bytes[0] << 8) | length_bytes[1]; // Convert bytes to uint16_t
         uint8_t *sof_data = malloc(length - 2); // Exclude the 2-byte length field
         
-        // if (marker[0] == 0 && marker[1] == 0) return;
         error(sof_data, input_file, output_file);
 
-        // read_and_write(input_file, output_file, sof_data, 2);
         read_file(input_file, sof_data, length - 2); // Read the SOF data
         write_file(output_file, sof_data, length - 2); // Write the SOF data to the output file
 
@@ -279,6 +276,16 @@ void extract_sos_data(FILE *input_file, FILE *output_file) {
     }
 }
 
+long get_size(FILE *input_file, FILE *output_file) {
+    fseek(input_file, 0, SEEK_END);
+    long input_size = ftell(input_file);
+    printf("Input size: %ld\n", input_size);
+
+    fseek(output_file, 0, SEEK_END);
+    long output_size = ftell(output_file);
+    printf("Input size: %ld\n", output_size);
+}
+
 int main(int argc, char **argv) {
     if (argc < 3) {
         printf("Usage: %s <input_file> <output_file>\n", argv[0]);
@@ -313,12 +320,15 @@ int main(int argc, char **argv) {
 
     uint8_t soi_marker[2]; // SOI
     read_and_write(input_file, output_file, soi_marker, 2);
-    
+
+
     extract_appn_data(input_file, output_file); // APPn
     printf("%d\n", ftell(input_file));
     // inject(input_file, output_file);
     
     text(input_file, output_file);
+
+    // inject_data(inject_file, output_file);
 
     extract_dqt_data(input_file, output_file); // DQT
 
@@ -328,7 +338,6 @@ int main(int argc, char **argv) {
     
     extract_sos_data(input_file, output_file); // SOS
     
-    inject_data(inject_file, output_file);
     
     fclose(input_file);
     fclose(output_file);
