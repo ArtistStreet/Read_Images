@@ -62,9 +62,7 @@ void inject_data(FILE *output_file) {
     //     fwrite(buffer, 1, n, output_file);
     // }
 
-    for (int i = 0; i < strlen(s); i++) {
-        fwrite(&s[i], 1, 1, output_file);
-    }
+    fwrite(s, sizeof(char), strlen(s), output_file);
 }
 
 void extract_appn_data(FILE *input_file, FILE *output_file) {
@@ -283,7 +281,7 @@ long get_size(FILE *input_file, FILE *output_file) {
 
     fseek(output_file, 0, SEEK_END);
     long output_size = ftell(output_file);
-    printf("Input size: %ld\n", output_size);
+    printf("Output size: %ld\n", output_size);
 }
 
 int main(int argc, char **argv) {
@@ -337,7 +335,8 @@ int main(int argc, char **argv) {
     extract_dht_data(input_file, output_file); // DHT
     
     extract_sos_data(input_file, output_file); // SOS
-    
+
+    get_size(input_file, output_file);
     
     fclose(input_file);
     fclose(output_file);
